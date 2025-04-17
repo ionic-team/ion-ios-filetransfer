@@ -1,8 +1,8 @@
 
 import XCTest
-@testable import LibTemplatePlaceholder
+@testable import IONFileTrasnsferLib
 
-class LibTemplatePlaceholderTests: XCTestCase {
+class IONFileTrasnsferLibTests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
