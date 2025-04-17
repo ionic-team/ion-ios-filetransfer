@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "7507FC1127FC2AAE003809F6"
-               BuildableName = "IONFileTrasnsferLib.framework"
-               BlueprintName = "IONFileTrasnsferLib"
-               ReferencedContainer = "container:IONFileTrasnsferLib.xcodeproj">
+               BuildableName = "IONFileTransferLib.framework"
+               BlueprintName = "IONFileTransferLib"
+               ReferencedContainer = "container:IONFileTransferLib.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -34,9 +34,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "7507FC1927FC2AAE003809F6"
-               BuildableName = "IONFileTrasnsferLibTests.xctest"
-               BlueprintName = "IONFileTrasnsferLibTests"
-               ReferencedContainer = "container:IONFileTrasnsferLib.xcodeproj">
+               BuildableName = "IONFileTransferLibTests.xctest"
+               BlueprintName = "IONFileTransferLibTests"
+               ReferencedContainer = "container:IONFileTransferLib.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "7507FC1127FC2AAE003809F6"
-            BuildableName = "IONFileTrasnsferLib.framework"
-            BlueprintName = "IONFileTrasnsferLib"
-            ReferencedContainer = "container:IONFileTrasnsferLib.xcodeproj">
+            BuildableName = "IONFileTransferLib.framework"
+            BlueprintName = "IONFileTransferLib"
+            ReferencedContainer = "container:IONFileTransferLib.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

@@ -18,15 +18,15 @@ default_platform(:ios)
 platform :ios do
   desc "Lane to run the unit tests"
   lane :unit_tests do
-    run_tests(device: "iPhone 8", scheme: "IONFileTrasnsferLib",
+    run_tests(device: "iPhone 8", scheme: "IONFileTransferLib",
       slack_url: ENV['SLACK_WEBHOOK'])
   end
 
   desc "Code coverage"
   lane :coverage do
     slather(
-      scheme: "IONFileTrasnsferLib",
-      proj: "IONFileTrasnsferLib.xcodeproj",
+      scheme: "IONFileTransferLib",
+      proj: "IONFileTransferLib.xcodeproj",
       output_directory: "sonar-reports", 
       sonarqube_xml: "true"
     )
@@ -34,7 +34,7 @@ platform :ios do
 
   lane :lint do
     swiftlint(
-      output_file: "sonar-reports/IONFileTrasnsferLib-swiftlint.txt",
+      output_file: "sonar-reports/IONFileTransferLib-swiftlint.txt",
       ignore_exit_status: true
     )
   end
