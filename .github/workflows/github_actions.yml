@@ -27,12 +27,14 @@ jobs:
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     - name: Code Coverage
       run: bundle exec fastlane coverage
-    - name: Lint
-      run: bundle exec fastlane lint
-    - name: Setup sonarqube
-      uses: warchant/setup-sonar-scanner@v8
-    - name: Send to Sonarcloud
-      run: bundle exec fastlane sonarqube
-      env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONARCLOUD_KEY }}
+    # Commenting Lint steps for now, until we fix the workflow process
+    # - name: Lint
+    #   run: bundle exec fastlane lint
+    # Commenting Sonarqube steps for now, until we are able to configure Sonarqube in Ionic repos
+    # - name: Setup sonarqube
+    #   uses: warchant/setup-sonar-scanner@v8
+    # - name: Send to Sonarcloud
+    #   run: bundle exec fastlane sonarqube
+    #   env: 
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     SONAR_TOKEN: ${{ secrets.SONARCLOUD_KEY }}
