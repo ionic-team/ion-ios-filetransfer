@@ -10,6 +10,10 @@ class IONFLTRUploadDelegate: IONFLTRBaseDelegate {
 
     /// The total number of bytes sent during the upload.
     private var totalBytesSent: Int = 0
+    
+    /// The data received from the server during the upload.
+    private lazy var receivedData: Data = Data()
+
 
     /// Initializes a new instance of the `IONFLTRUploadDelegate` class.
     ///
@@ -43,7 +47,36 @@ extension IONFLTRUploadDelegate: URLSessionDataDelegate {
     ///   - task: The `URLSessionTask` that completed.
     ///   - error: The error that occurred, if any.
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
-        super.handleCompletion(task: task, error: error)
+        if let error = error {
+            super.handleCompletion(task: task, error: error)
+            return
+        }
+        
+        let response = task.response as? HTTPURLResponse
+        let statusCode = response?.statusCode ?? 0
+        let responseData = String(data: receivedData, encoding: .utf8)
+        let headers = response?.allHeaderFields.reduce(into: [String: String]()) { result, element in
+            if let key = element.key as? String, let value = element.value as? String {
+                result[key] = value
+            }
+        } ?? [:]
+        
+        if (200...299).contains(statusCode) {
+            publisher.sendSuccess(
+                totalBytes: totalBytesSent,
+                responseCode: statusCode,
+                responseBody: responseData,
+                headers: headers
+            )
+        } else {
+            publisher.sendFailure(
+                IONFLTRException.httpError(
+                    responseCode: statusCode,
+                    responseBody: nil,
+                    headers: headers
+                )
+            )
+        }
     }
     
     /// Handles HTTP redirection for a task.
@@ -65,20 +98,6 @@ extension IONFLTRUploadDelegate: URLSessionDataDelegate {
     ///   - dataTask: The `URLSessionDataTask` that received the data.
     ///   - data: The data received from the server.
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        let response = dataTask.response as? HTTPURLResponse
-        let statusCode = response?.statusCode ?? 0
-        let responseData = String(data: data, encoding: .utf8)
-        let headers = response?.allHeaderFields.reduce(into: [String: String]()) { result, element in
-            if let key = element.key as? String, let value = element.value as? String {
-                result[key] = value
-            }
-        } ?? [:]
-
-        publisher.sendSuccess(
-            totalBytes: totalBytesSent,
-            responseCode: statusCode,
-            responseBody: responseData,
-            headers: headers
-        )
+        receivedData.append(data)
     }
 }

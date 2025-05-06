@@ -93,35 +93,36 @@ final class IONFLTRUploadDelegateTests: XCTestCase {
         waitForExpectations(timeout: 1)
     }
 
-    func testDidReceiveData_shouldCallSendSuccess() {
-        class MockDataTask: URLSessionDataTask, @unchecked Sendable {
-            private let mockResponse: URLResponse?
-
-            override var response: URLResponse? {
-                return mockResponse
-            }
-
-            init(response: URLResponse?) {
-                self.mockResponse = response
-                super.init()
-            }
-        }
+    func testDidReceiveData_shouldAccumulateData() {
+        let data1 = "Part1".data(using: .utf8)!
+        let data2 = "Part2".data(using: .utf8)!
         
-        let expectedResponseBody = "Success!"
-        let data = expectedResponseBody.data(using: .utf8)!
         let task = URLSession.shared.dataTask(with: URL(string: "https://example.com")!)
 
-        let urlResponse = HTTPURLResponse(url: task.originalRequest!.url!, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "text/plain"])
-        let dataTask = MockDataTask(response: urlResponse)
+        delegate.urlSession(URLSession.shared, dataTask: task, didReceive: data1)
+        delegate.urlSession(URLSession.shared, dataTask: task, didReceive: data2)
 
-        delegate.urlSession(URLSession.shared, dataTask: dataTask, didReceive: data)
+        let response = HTTPURLResponse(
+            url: task.originalRequest!.url!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: ["Content-Type": "text/plain"]
+        )
+        
+        class MockTask: URLSessionTask, @unchecked Sendable {
+            let mockResponse: URLResponse?
+            override var response: URLResponse? { return mockResponse }
+            init(response: URLResponse?) { self.mockResponse = response }
+        }
+
+        let mockTask = MockTask(response: response)
+        delegate.urlSession(URLSession.shared, task: mockTask, didCompleteWithError: nil)
 
         let result = mockPublisher.successCalled
-        XCTAssertEqual(result?.0, 0) // totalBytesSent should still be 0
-        XCTAssertEqual(result?.1, 200)
-        XCTAssertEqual(result?.2, expectedResponseBody)
+        XCTAssertEqual(result?.2, "Part1Part2")
         XCTAssertEqual(result?.3["Content-Type"], "text/plain")
     }
+
     
     func testDidCompleteWithError_Non2xxStatusCode() {
         class MockURLSessionTask: URLSessionTask, @unchecked Sendable {
@@ -152,9 +153,32 @@ final class IONFLTRUploadDelegateTests: XCTestCase {
         )
     }
     
-    func testDidCompleteWithError_withoutError_shouldNotSendFailure() {
-        delegate.urlSession(URLSession.shared, task: URLSessionDataTask(), didCompleteWithError: nil)
+    func testDidCompleteWithSuccess_shouldSendSuccess() {
+        let responseBody = "Uploaded!"
+        let data = responseBody.data(using: .utf8)!
         
-        XCTAssertNil(mockPublisher.failureCalled)
+        let task = URLSession.shared.dataTask(with: URL(string: "https://example.com")!)
+        delegate.urlSession(URLSession.shared, dataTask: task, didReceive: data)
+
+        class MockTask: URLSessionTask {
+            let mockResponse: URLResponse?
+            override var response: URLResponse? { return mockResponse }
+            init(response: URLResponse?) { self.mockResponse = response }
+        }
+
+        let mockResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com")!,
+            statusCode: 201,
+            httpVersion: nil,
+            headerFields: ["X-Custom": "value"]
+        )
+        let mockTask = MockTask(response: mockResponse)
+
+        delegate.urlSession(URLSession.shared, task: mockTask, didCompleteWithError: nil)
+
+        XCTAssertEqual(mockPublisher.successCalled?.0, 0) // totalBytesSent is default 0
+        XCTAssertEqual(mockPublisher.successCalled?.1, 201)
+        XCTAssertEqual(mockPublisher.successCalled?.2, responseBody)
+        XCTAssertEqual(mockPublisher.successCalled?.3["X-Custom"], "value")
     }
 }
