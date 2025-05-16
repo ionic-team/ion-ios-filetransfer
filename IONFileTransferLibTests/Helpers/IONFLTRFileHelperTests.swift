@@ -53,4 +53,25 @@ final class IONFLTRFileHelperTests: XCTestCase {
         
         XCTAssertNil(fileHelper.mimeType(for: unknownURL))
     }
+    
+    func testRemoveDuplicateSlashes_withoutDuplicates() {
+        let inputURL = URL(fileURLWithPath:"/path/to/file")
+        let expectedURL = URL(fileURLWithPath:"/path/to/file")
+        
+        XCTAssertEqual(fileHelper.removeDuplicateSlashes(for: inputURL), expectedURL)
+    }
+    
+    func testRemoveDuplicateSlashes_withDuplicatesInEnd() {
+        let inputURL = URL(fileURLWithPath:"/path/to/file//")
+        let expectedURL = URL(fileURLWithPath:"/path/to/file/")
+        
+        XCTAssertEqual(fileHelper.removeDuplicateSlashes(for: inputURL), expectedURL)
+    }
+    
+    func testRemoveDuplicateSlashes_withDuplicatesInSeveralPlaces() {
+        let inputURL = URL(fileURLWithPath:"//path///to/file//")
+        let expectedURL = URL(fileURLWithPath:"/path/to/file/")
+        
+        XCTAssertEqual(fileHelper.removeDuplicateSlashes(for: inputURL), expectedURL)
+    }
 }
