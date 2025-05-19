@@ -110,8 +110,9 @@ public class IONFLTRManager: NSObject {
     /// - Returns: A configured `URLRequest` for the download operation.
     /// - Throws: An error if validation or directory creation fails.
     private func prepareForDownload(serverURL: URL, fileURL: URL, httpOptions: IONFLTRHttpOptions) throws -> URLRequest {
-        try inputsValidator.validateTransferInputs(serverURL: serverURL, fileURL: fileURL)
-        try fileHelper.createParentDirectories(for: fileURL)
+        let updatedFileURL = fileHelper.removeDuplicateSlashes(for: fileURL)
+        try inputsValidator.validateTransferInputs(serverURL: serverURL, fileURL: updatedFileURL)
+        try fileHelper.createParentDirectories(for: updatedFileURL)
         return try urlRequestHelper.setupRequest(serverURL: serverURL, httpOptions: httpOptions)
     }
 
@@ -130,9 +131,10 @@ public class IONFLTRManager: NSObject {
         uploadOptions: IONFLTRUploadOptions,
         httpOptions: IONFLTRHttpOptions
     ) throws -> (URLRequest, URL) {
-        try inputsValidator.validateTransferInputs(serverURL: serverURL, fileURL: fileURL)
+        let updatedFileURL = fileHelper.removeDuplicateSlashes(for: fileURL)
+        try inputsValidator.validateTransferInputs(serverURL: serverURL, fileURL: updatedFileURL)
         
-        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+        guard FileManager.default.fileExists(atPath: updatedFileURL.path) else {
             throw IONFLTRException.fileDoesNotExist(cause: nil)
         }
         
@@ -141,7 +143,7 @@ public class IONFLTRManager: NSObject {
             request: request,
             httpOptions: httpOptions,
             uploadOptions: uploadOptions,
-            fileURL: fileURL,
+            fileURL: updatedFileURL,
             fileHelper: fileHelper
         )
     }

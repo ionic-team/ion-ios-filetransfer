@@ -39,4 +39,26 @@ class IONFLTRFileHelper {
     func mimeType(for url: URL) -> String? {
         return UTType(filenameExtension: url.pathExtension)?.preferredMIMEType
     }
+    
+    /// Remove duplicate slahes (file separator '/') from local file URLs
+    ///
+    /// The only exception being the slashes indicating the scheme (e.g. 'file://')
+    ///
+    /// - Parameter url: The file URL.
+    /// - Returns: The file URL with duplicate slashes removed
+    func removeDuplicateSlashes(for url: URL) -> URL {
+        var urlStringWithoutDuplicateSeparators = url.absoluteString.replacingOccurrences(
+            of: #"(?<!:)/{2,}(?!/)"#,
+            with: "/",
+            options: .regularExpression
+        )
+        if (url.absoluteString.contains(":///")) {
+            // the regex may ommit a slash after ://, which is incorrect because it breaks in case of an absolute file path
+            urlStringWithoutDuplicateSeparators = urlStringWithoutDuplicateSeparators.replacingOccurrences(of: "://", with: ":///")
+        }
+        if let finalUrl = URL(string: urlStringWithoutDuplicateSeparators) {
+            return finalUrl
+        }
+        return url
+    }
 }

@@ -39,7 +39,7 @@ class IONFLTRInputsValidator {
     ///
     /// - Parameter url: The file `URL` to check.
     /// - Returns: `true` if the URL is a valid file URL, `false` otherwise.
-    func isFileURLValid(url: URL) -> Bool {
+    private func isFileURLValid(url: URL) -> Bool {
         guard url.isFileURL else { return false }
         return true
     }
