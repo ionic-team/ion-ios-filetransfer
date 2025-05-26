@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name                   = 'IONFileTransferLib'
-  spec.version                = '0.0.1'
+  spec.version                = '1.0.0'
 
   spec.summary                = 'A native iOS library for download and upload files.'
   spec.description            = 'A Swift library for iOS that provides simple way to download and upload files. Download and upload files with a secure, clean and modern API.'
