@@ -29,7 +29,8 @@ final class IONFLTRUploadDelegateTests: XCTestCase {
         mockPublisher = MockPublisher()
         delegate = IONFLTRUploadDelegate(
             publisher: mockPublisher,
-            disableRedirects: false
+            disableRedirects: false,
+            fileURL: URL(string: "somefile_path/not_relevat_for_test.txt")!
         )
     }
 
@@ -76,7 +77,8 @@ final class IONFLTRUploadDelegateTests: XCTestCase {
     func testRedirection_shouldBeCancelledWhenDisabled() {
         delegate = IONFLTRUploadDelegate(
             publisher: mockPublisher,
-            disableRedirects: true
+            disableRedirects: true,
+            fileURL: URL(string: "somefile_path/not_relevat_for_test.txt")!
         )
 
         let task = URLSession.shared.dataTask(with: URL(string: "https://example.com")!)
@@ -180,5 +182,34 @@ final class IONFLTRUploadDelegateTests: XCTestCase {
         XCTAssertEqual(mockPublisher.successCalled?.1, 201)
         XCTAssertEqual(mockPublisher.successCalled?.2, responseBody)
         XCTAssertEqual(mockPublisher.successCalled?.3["X-Custom"], "value")
+    }
+    
+    func testBodyStream_retrievedFromTestFile() {
+        let testFileURL = FileManager.default.temporaryDirectory.appendingPathComponent("testFile.txt")
+        try? "Test content".write(to: testFileURL, atomically: true, encoding: .utf8)
+        delegate = IONFLTRUploadDelegate(
+            publisher: mockPublisher,
+            disableRedirects: true,
+            fileURL: testFileURL
+        )
+        let expectation = self.expectation(description: "stream is correct")
+
+        let task = URLSession.shared.dataTask(with: URL(string: "https://example.com")!)
+        delegate.urlSession(
+            URLSession.shared,
+            task: task,
+            needNewBodyStream: { stream in
+                XCTAssertNotNil(stream)
+                stream?.open()
+                var buffer = [UInt8](repeating: 0, count: 100)
+                let bytesRead = stream!.read(&buffer, maxLength: buffer.count)
+                XCTAssertGreaterThan(bytesRead, 0)
+                let outputString = String(bytes: buffer[0..<bytesRead], encoding: .utf8)
+                XCTAssertEqual(outputString, "Test content")
+                stream?.close()
+                expectation.fulfill()
+            }
+        )
+        waitForExpectations(timeout: 1)
     }
 }
