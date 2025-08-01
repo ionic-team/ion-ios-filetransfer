@@ -111,9 +111,9 @@ extension IONFLTRUploadDelegate: URLSessionDataDelegate {
     /// - Parameters:
     ///   - session: The `URLSession` containing the data task.
     ///   - task: The `URLSessionTask` that wiill get the input stream
-    func urlSession(_ session: URLSession, needNewBodyStreamForTask task: URLSessionTask) async -> InputStream? {
+    func urlSession(_ session: URLSession, task: URLSessionTask, needNewBodyStream completionHandler: @escaping (InputStream?) -> Void) {
         print("needNewBodyStream")
         let stream = InputStream(fileAtPath: fileURL.path)
-        return stream
+        completionHandler(stream)
     }
 }
