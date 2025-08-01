@@ -77,8 +77,6 @@ class IONFLTRURLRequestHelper {
         let fileLength = getFileSize(from: fileURL)
 
         if uploadOptions.chunkedMode {
-            let inputStream = InputStream(fileAtPath: fileURL.path)
-            request.httpBodyStream = inputStream
             request.setContentLengthHeader(httpOptions: httpOptions, contentLength: fileLength)
             return (request, fileURL)
         } else if isMultipartUpload {

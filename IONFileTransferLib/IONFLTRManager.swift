@@ -87,7 +87,8 @@ public class IONFLTRManager: NSObject {
             let publisher = IONFLTRPublisher()
             let delegate = IONFLTRUploadDelegate(
                 publisher: publisher,
-                disableRedirects: httpOptions.disableRedirects
+                disableRedirects: httpOptions.disableRedirects,
+                fileURL: fileURL
             )
             let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
             if uploadOptions.chunkedMode {

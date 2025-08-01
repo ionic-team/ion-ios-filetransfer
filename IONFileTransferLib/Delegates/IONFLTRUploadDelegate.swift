@@ -8,6 +8,9 @@ import Foundation
 /// - Note: This class conforms to `URLSessionTaskDelegate` and `URLSessionDataDelegate` to handle task-specific events.
 class IONFLTRUploadDelegate: IONFLTRBaseDelegate {
 
+    /// the URL pointing to the file to upload
+    let fileURL: URL
+    
     /// The total number of bytes sent during the upload.
     private var totalBytesSent: Int = 0
     
@@ -20,7 +23,9 @@ class IONFLTRUploadDelegate: IONFLTRBaseDelegate {
     /// - Parameters:
     ///   - publisher: The publisher used to send progress and success updates.
     ///   - disableRedirects: A flag indicating whether HTTP redirects should be disabled.
-    override init(publisher: IONFLTRPublisher, disableRedirects: Bool) {
+    ///   - fileURL: the URL pointing to the file to upload
+    init(publisher: IONFLTRPublisher, disableRedirects: Bool, fileURL: URL) {
+        self.fileURL = fileURL
         super.init(publisher: publisher, disableRedirects: disableRedirects)
     }
 }
@@ -99,5 +104,16 @@ extension IONFLTRUploadDelegate: URLSessionDataDelegate {
     ///   - data: The data received from the server.
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         receivedData.append(data)
+    }
+    
+    /// Handles sending a body stream of the file to upload. Relevant for chunkedMode=true
+    ///
+    /// - Parameters:
+    ///   - session: The `URLSession` containing the data task.
+    ///   - task: The `URLSessionTask` that wiill get the input stream
+    func urlSession(_ session: URLSession, needNewBodyStreamForTask task: URLSessionTask) async -> InputStream? {
+        print("needNewBodyStream")
+        let stream = InputStream(fileAtPath: fileURL.path)
+        return stream
     }
 }
