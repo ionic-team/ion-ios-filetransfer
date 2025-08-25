@@ -134,20 +134,10 @@ class IONFLTRURLRequestHelperTests: XCTestCase {
             fileHelper: fileHelper
         )
         
-        let stream = configuredRequest.httpBodyStream
-        stream?.open()
-        let bufferSize = 1024
-        var buffer = [UInt8](repeating: 0, count: bufferSize)
-        var data = Data()
-        while let bytesRead = stream?.read(&buffer, maxLength: bufferSize), bytesRead > 0 {
-            data.append(buffer, count: bytesRead)
-        }
-        stream?.close()
-
         let fileData = try Data(contentsOf: testFileURL)
-
-        XCTAssertEqual(data, fileData)
         XCTAssertEqual(fileURL, testFileURL)
+        XCTAssertNil(configuredRequest.httpBodyStream)
+        XCTAssertEqual(configuredRequest.value(forHTTPHeaderField: "Content-Length"), String(fileData.count))
     }
     
     func testConfigureRequestForUpload_withMultipartUpload() throws {
@@ -169,7 +159,9 @@ class IONFLTRURLRequestHelperTests: XCTestCase {
             fileHelper: fileHelper
         )
 
+        let fileData = try Data(contentsOf: testFileURL)
         XCTAssertEqual(configuredRequest.value(forHTTPHeaderField: "Content-Type")?.contains("multipart/form-data"), true)
+        XCTAssertTrue(Int(configuredRequest.value(forHTTPHeaderField: "Content-Length")!)! > fileData.count)
         XCTAssertTrue(FileManager.default.fileExists(atPath: tempFileURL.path))
         try? FileManager.default.removeItem(at: tempFileURL)
     }

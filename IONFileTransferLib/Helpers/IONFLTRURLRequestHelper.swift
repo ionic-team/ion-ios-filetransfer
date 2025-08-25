@@ -73,18 +73,21 @@ class IONFLTRURLRequestHelper {
                 request.setValue(mimeType, forHTTPHeaderField: "Content-Type")
             }
         }
+        
+        let fileLength = getFileSize(from: fileURL)
 
         if uploadOptions.chunkedMode {
-            let inputStream = InputStream(fileAtPath: fileURL.path)
-            request.httpBodyStream = inputStream
+            request.setContentLengthHeader(httpOptions: httpOptions, contentLength: fileLength)
             return (request, fileURL)
         } else if isMultipartUpload {
             let httpBody = try createMultipartBody(uploadOptions: uploadOptions, fileURL: fileURL, fileHelper: fileHelper, boundary: boundary)
             let tempFileURL = FileManager.default.temporaryDirectory.appendingPathComponent("multipart_\(UUID().uuidString).tmp")
+            request.setContentLengthHeader(httpOptions: httpOptions, contentLength: Int64(httpBody.count))
             try httpBody.write(to: tempFileURL)
             return (request, tempFileURL)
         }
 
+        request.setContentLengthHeader(httpOptions: httpOptions, contentLength: fileLength)
         return (request, fileURL)
     }
 
@@ -160,6 +163,25 @@ class IONFLTRURLRequestHelper {
 
         body.append("--\(boundary)--\(lineEnd)".data(using: .utf8)!)
         return body
+    }
+    
+    private func getFileSize(from url: URL) -> Int64 {
+        do {
+            return try FileManager.default.attributesOfItem(atPath: url.path)[.size] as! Int64
+        } catch {
+            return 0
+        }
+    }
+}
+
+private extension URLRequest {
+    mutating func setContentLengthHeader(
+        httpOptions: IONFLTRHttpOptions,
+        contentLength: Int64
+    ) {
+        if (!httpOptions.headers.keys.contains("Content-Length") && contentLength > 0) {
+            setValue(String(contentLength), forHTTPHeaderField: "Content-Length")
+        }
     }
 }
 
