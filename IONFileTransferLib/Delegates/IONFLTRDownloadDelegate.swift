@@ -13,6 +13,9 @@ class IONFLTRDownloadDelegate: IONFLTRBaseDelegate {
 
     /// The total number of bytes written during the download.
     private var totalBytesWritten: Int = 0
+    
+    /// Flag to track if an HTTP error was already handled in didFinishDownloadingTo
+    private var errorHandled: Bool = false
 
     /// Initializes a new instance of the `IONFLTRDownloadDelegate` class.
     ///
@@ -49,12 +52,6 @@ extension IONFLTRDownloadDelegate: URLSessionDownloadDelegate {
     ///   - location: The temporary file location of the downloaded file.
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         do {
-            let fileManager = FileManager.default
-            if fileManager.fileExists(atPath: self.destinationURL.path) {
-                try fileManager.removeItem(at: self.destinationURL)
-            }
-            try fileManager.moveItem(at: location, to: self.destinationURL)
-
             let response = downloadTask.response as? HTTPURLResponse
             let statusCode = response?.statusCode ?? 0
             let headers = response?.allHeaderFields.reduce(into: [String: String]()) { result, element in
@@ -62,6 +59,36 @@ extension IONFLTRDownloadDelegate: URLSessionDownloadDelegate {
                     result[key] = value
                 }
             } ?? [:]
+            let fileManager = FileManager.default
+            
+            if let httpResponse = response, !(200...299).contains(httpResponse.statusCode) {
+                // HTTP error response body (if exists) is written to file in DownloadTask
+                var responseBody: String? = nil
+                if (fileManager.fileExists(atPath: location.path)) {
+                    if let data = try? Data(contentsOf: location),
+                       let bodyString = String(data: data, encoding: .utf8) {
+                        responseBody = bodyString
+                    }
+                    try? fileManager.removeItem(at: location)
+                }
+                
+                publisher.sendFailure(
+                    IONFLTRException.httpError(
+                        responseCode: statusCode,
+                        responseBody: responseBody,
+                        headers: headers
+                    )
+                )
+                
+                // Mark error as handled to prevent duplicate error reporting in didCompleteWithError
+                errorHandled = true
+                return
+            }
+        
+            if fileManager.fileExists(atPath: self.destinationURL.path) {
+                try fileManager.removeItem(at: self.destinationURL)
+            }
+            try fileManager.moveItem(at: location, to: self.destinationURL)
             
             publisher.sendSuccess(
                 totalBytes: totalBytesWritten,
@@ -81,6 +108,10 @@ extension IONFLTRDownloadDelegate: URLSessionDownloadDelegate {
     ///   - task: The `URLSessionTask` that completed.
     ///   - error: The error that occurred, if any.
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
+        // If we already handled an HTTP error in didFinishDownloadingTo, skip duplicate error handling
+        if errorHandled {
+            return
+        }
         super.handleCompletion(task: task, error: error)
     }
     
