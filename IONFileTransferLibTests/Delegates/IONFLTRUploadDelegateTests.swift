@@ -35,11 +35,29 @@ final class IONFLTRUploadDelegateTests: XCTestCase {
     }
 
     func testDidSendBodyData_shouldCallSendProgress() {
-        let task = URLSession.shared.dataTask(with: URL(string: "https://example.com")!)
+        class MockTask: URLSessionTask, @unchecked Sendable {
+            private let mockResponse: URLResponse?
+            
+            init(response: URLResponse?) {
+                self.mockResponse = response
+            }
+            
+            override var response: URLResponse? {
+                return mockResponse
+            }
+        }
+        
+        let mockResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        let mockTask = MockTask(response: mockResponse)
 
         delegate.urlSession(
             URLSession.shared,
-            task: task,
+            task: mockTask,
             didSendBodyData: 100,
             totalBytesSent: 500,
             totalBytesExpectedToSend: 1000

@@ -41,7 +41,11 @@ extension IONFLTRDownloadDelegate: URLSessionDownloadDelegate {
     ///   - totalBytesExpectedToWrite: The total number of bytes expected to be written.
     func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         self.totalBytesWritten = Int(totalBytesWritten)
-        publisher.sendProgress(Int(totalBytesWritten), totalBytesExpected: Int(totalBytesExpectedToWrite))
+        let response = downloadTask.response as? HTTPURLResponse
+        let statusCode = response?.statusCode ?? 0
+        if (200...299).contains(statusCode) {
+            publisher.sendProgress(Int(totalBytesWritten), totalBytesExpected: Int(totalBytesExpectedToWrite))
+        }
     }
     
     /// Handles the completion of a download task.

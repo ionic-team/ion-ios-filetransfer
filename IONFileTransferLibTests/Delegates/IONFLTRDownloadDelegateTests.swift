@@ -35,11 +35,30 @@ final class IONFLTRDownloadDelegateTests: XCTestCase {
     }
     
     func testDidWriteData_shouldSendProgress() {
-        let request = URLRequest(url: URL(string: "https://example.com/file")!)
+        class MockDownloadTask: URLSessionDownloadTask, @unchecked Sendable {
+            private let mockResponse: URLResponse?
+
+            init(response: URLResponse?) {
+                self.mockResponse = response
+                super.init()
+            }
+
+            override var response: URLResponse? {
+                return mockResponse
+            }
+        }
+        
+        let mockResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com/file")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        let mockTask = MockDownloadTask(response: mockResponse)
         
         delegate.urlSession(
             URLSession.shared,
-            downloadTask: URLSession(configuration: .default).downloadTask(with: request),
+            downloadTask: mockTask,
             didWriteData: 50,
             totalBytesWritten: 150,
             totalBytesExpectedToWrite: 300
