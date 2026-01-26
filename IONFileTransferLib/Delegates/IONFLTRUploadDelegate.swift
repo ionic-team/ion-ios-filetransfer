@@ -74,10 +74,14 @@ extension IONFLTRUploadDelegate: URLSessionDataDelegate {
                 headers: headers
             )
         } else {
+            var errorResponseBody: String? = responseData
+            if (responseData?.isEmpty ?? true) {
+                errorResponseBody = nil
+            }
             publisher.sendFailure(
                 IONFLTRException.httpError(
                     responseCode: statusCode,
-                    responseBody: nil,
+                    responseBody: errorResponseBody,
                     headers: headers
                 )
             )

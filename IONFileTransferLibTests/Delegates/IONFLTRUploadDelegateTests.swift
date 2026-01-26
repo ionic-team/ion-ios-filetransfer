@@ -126,7 +126,48 @@ final class IONFLTRUploadDelegateTests: XCTestCase {
     }
 
     
-    func testDidCompleteWithError_Non2xxStatusCode() {
+    func testDidCompleteWithError_Non2xxStatusCode_shouldIncludeResponseBody() {
+        class MockURLSessionTask: URLSessionTask, @unchecked Sendable {
+            private let mockResponse: URLResponse?
+            
+            init(response: URLResponse?) {
+                self.mockResponse = response
+            }
+            
+            override var response: URLResponse? {
+                return mockResponse
+            }
+        }
+        
+        let errorResponseBody = "{\"error\": \"Resource not found\", \"status\": 404}"
+        let errorData = errorResponseBody.data(using: .utf8)!
+        
+        // Simulate receiving response data before error
+        let task = URLSession.shared.dataTask(with: URL(string: "https://example.com")!)
+        delegate.urlSession(URLSession.shared, dataTask: task, didReceive: errorData)
+        
+        let response = HTTPURLResponse(
+            url: URL(string: "https://example.com")!,
+            statusCode: 404,
+            httpVersion: nil,
+            headerFields: ["Content-Type": "application/json"]
+        )
+        let mockTask = MockURLSessionTask(response: response)
+        
+        delegate.urlSession(URLSession.shared, task: mockTask, didCompleteWithError: nil)
+        
+        guard let exception = mockPublisher.failureCalled as? IONFLTRException,
+              case .httpError(let responseCode, let responseBody, let headers) = exception else {
+            XCTFail("Expected IONFLTRException.httpError")
+            return
+        }
+        
+        XCTAssertEqual(responseCode, 404)
+        XCTAssertEqual(responseBody, errorResponseBody, "Response body should be included in HTTP error")
+        XCTAssertEqual(headers?["Content-Type"], "application/json")
+    }
+    
+    func testDidCompleteWithError_Non2xxStatusCode_withoutReceivedData_shouldHaveNilResponseBody() {
         class MockURLSessionTask: URLSessionTask, @unchecked Sendable {
             private let mockResponse: URLResponse?
             
@@ -141,18 +182,24 @@ final class IONFLTRUploadDelegateTests: XCTestCase {
         
         let response = HTTPURLResponse(
             url: URL(string: "https://example.com")!,
-            statusCode: 404,
+            statusCode: 500,
             httpVersion: nil,
-            headerFields: ["Content-Type": "application/json"]
+            headerFields: ["Content-Type": "text/plain"]
         )
         let task = MockURLSessionTask(response: response)
         
+        // Don't receive any data before the error
         delegate.urlSession(URLSession.shared, task: task, didCompleteWithError: nil)
         
-        XCTAssertEqual(
-            mockPublisher.failureCalled as? IONFLTRException?,
-            IONFLTRException.httpError(responseCode: 404, responseBody: nil, headers: ["Content-Type": "application/json"])
-        )
+        guard let exception = mockPublisher.failureCalled as? IONFLTRException,
+              case .httpError(let responseCode, let responseBody, let headers) = exception else {
+            XCTFail("Expected IONFLTRException.httpError")
+            return
+        }
+        
+        XCTAssertEqual(responseCode, 500)
+        XCTAssertNil(responseBody, "Response body should be nil when no data was received")
+        XCTAssertEqual(headers?["Content-Type"], "text/plain")
     }
     
     func testDidCompleteWithSuccess_shouldSendSuccess() {
