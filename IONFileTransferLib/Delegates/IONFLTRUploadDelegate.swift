@@ -42,7 +42,11 @@ extension IONFLTRUploadDelegate: URLSessionDataDelegate {
     ///   - totalBytesExpectedToSend: The total number of bytes expected to be sent.
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         self.totalBytesSent = Int(totalBytesSent)
-        publisher.sendProgress(Int(totalBytesSent), totalBytesExpected: Int(totalBytesExpectedToSend))
+        let response = task.response as? HTTPURLResponse
+        let statusCode = response?.statusCode ?? 0
+        if (200...299).contains(statusCode) {
+            publisher.sendProgress(Int(totalBytesSent), totalBytesExpected: Int(totalBytesExpectedToSend))
+        }
     }
     
     /// Handles the completion of an upload task.
@@ -74,10 +78,14 @@ extension IONFLTRUploadDelegate: URLSessionDataDelegate {
                 headers: headers
             )
         } else {
+            var errorResponseBody: String? = responseData
+            if (responseData?.isEmpty ?? true) {
+                errorResponseBody = nil
+            }
             publisher.sendFailure(
                 IONFLTRException.httpError(
                     responseCode: statusCode,
-                    responseBody: nil,
+                    responseBody: errorResponseBody,
                     headers: headers
                 )
             )

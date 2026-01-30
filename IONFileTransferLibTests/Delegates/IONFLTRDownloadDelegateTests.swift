@@ -35,11 +35,30 @@ final class IONFLTRDownloadDelegateTests: XCTestCase {
     }
     
     func testDidWriteData_shouldSendProgress() {
-        let request = URLRequest(url: URL(string: "https://example.com/file")!)
+        class MockDownloadTask: URLSessionDownloadTask, @unchecked Sendable {
+            private let mockResponse: URLResponse?
+
+            init(response: URLResponse?) {
+                self.mockResponse = response
+                super.init()
+            }
+
+            override var response: URLResponse? {
+                return mockResponse
+            }
+        }
+        
+        let mockResponse = HTTPURLResponse(
+            url: URL(string: "https://example.com/file")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+        let mockTask = MockDownloadTask(response: mockResponse)
         
         delegate.urlSession(
             URLSession.shared,
-            downloadTask: URLSession(configuration: .default).downloadTask(with: request),
+            downloadTask: mockTask,
             didWriteData: 50,
             totalBytesWritten: 150,
             totalBytesExpectedToWrite: 300
@@ -130,7 +149,94 @@ final class IONFLTRDownloadDelegateTests: XCTestCase {
         wait(for: [expectation], timeout: 1.0)
     }
     
-    func testDidCompleteWithError_Non2xxStatusCode() {
+    func testDidFinishDownloadingTo_Non2xxStatusCode_shouldIncludeResponseBody() {
+        class MockDownloadTask: URLSessionDownloadTask, @unchecked Sendable {
+            private let mockResponse: URLResponse?
+
+            init(response: URLResponse?) {
+                self.mockResponse = response
+                super.init()
+            }
+
+            override var response: URLResponse? {
+                return mockResponse
+            }
+        }
+        
+        let destinationURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
+        let tempSourceURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
+        
+        // Create a temporary file with error response body
+        let errorResponseBody = "{\"error\": \"File not found\", \"code\": 404}"
+        FileManager.default.createFile(atPath: tempSourceURL.path, contents: Data(errorResponseBody.utf8), attributes: nil)
+
+        let mockResponse = HTTPURLResponse(
+            url: destinationURL,
+            statusCode: 404,
+            httpVersion: nil,
+            headerFields: ["Content-Type": "application/json"]
+        )
+        let mockTask = MockDownloadTask(response: mockResponse)
+
+        delegate.urlSession(URLSession.shared, downloadTask: mockTask, didFinishDownloadingTo: tempSourceURL)
+
+        guard let exception = mockPublisher.failureCalled as? IONFLTRException,
+              case .httpError(let responseCode, let responseBody, let headers) = exception else {
+            XCTFail("Expected IONFLTRException.httpError")
+            return
+        }
+        
+        XCTAssertEqual(responseCode, 404)
+        XCTAssertEqual(responseBody, errorResponseBody, "Response body should be included in HTTP error")
+        XCTAssertEqual(headers?["Content-Type"], "application/json")
+        
+        // Verify the temporary file was cleaned up
+        XCTAssertFalse(FileManager.default.fileExists(atPath: tempSourceURL.path))
+    }
+    
+    func testDidFinishDownloadingTo_Non2xxStatusCode_withInvalidUTF8_shouldHandleGracefully() {
+        class MockDownloadTask: URLSessionDownloadTask, @unchecked Sendable {
+            private let mockResponse: URLResponse?
+
+            init(response: URLResponse?) {
+                self.mockResponse = response
+                super.init()
+            }
+
+            override var response: URLResponse? {
+                return mockResponse
+            }
+        }
+        
+        let destinationURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
+        let tempSourceURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
+        
+        // Create a temporary file with invalid UTF-8 data
+        let invalidUTF8Data = Data([0xFF, 0xFE, 0xFD])
+        FileManager.default.createFile(atPath: tempSourceURL.path, contents: invalidUTF8Data, attributes: nil)
+
+        let mockResponse = HTTPURLResponse(
+            url: destinationURL,
+            statusCode: 500,
+            httpVersion: nil,
+            headerFields: ["Content-Type": "application/octet-stream"]
+        )
+        let mockTask = MockDownloadTask(response: mockResponse)
+
+        delegate.urlSession(URLSession.shared, downloadTask: mockTask, didFinishDownloadingTo: tempSourceURL)
+
+        guard let exception = mockPublisher.failureCalled as? IONFLTRException,
+              case .httpError(let responseCode, let responseBody, let headers) = exception else {
+            XCTFail("Expected IONFLTRException.httpError")
+            return
+        }
+        
+        XCTAssertEqual(responseCode, 500)
+        XCTAssertNil(responseBody, "Response body should be nil when UTF-8 conversion fails")
+        XCTAssertEqual(headers?["Content-Type"], "application/octet-stream")
+    }
+    
+    func testDidCompleteWithError_Non2xxStatusCode_withoutReceivedData_shouldHaveNilResponseBody() {
         class MockURLSessionTask: URLSessionTask, @unchecked Sendable {
             private let mockResponse: URLResponse?
             
@@ -153,10 +259,60 @@ final class IONFLTRDownloadDelegateTests: XCTestCase {
         
         delegate.urlSession(URLSession.shared, task: task, didCompleteWithError: nil)
         
-        XCTAssertEqual(
-            mockPublisher.failureCalled as? IONFLTRException?,
-            IONFLTRException.httpError(responseCode: 404, responseBody: nil, headers: ["Content-Type": "application/json"])
+        guard let exception = mockPublisher.failureCalled as? IONFLTRException,
+              case .httpError(let responseCode, let responseBody, let headers) = exception else {
+            XCTFail("Expected IONFLTRException.httpError")
+            return
+        }
+        
+        XCTAssertEqual(responseCode, 404)
+        XCTAssertNil(responseBody, "Response body should be nil when no data was received")
+        XCTAssertEqual(headers?["Content-Type"], "application/json")
+    }
+    
+    func testDidFinishDownloadingTo_Non2xxStatusCode_shouldPreventDuplicateErrorInDidCompleteWithError() {
+        class MockDownloadTask: URLSessionDownloadTask, @unchecked Sendable {
+            private let mockResponse: URLResponse?
+
+            init(response: URLResponse?) {
+                self.mockResponse = response
+                super.init()
+            }
+
+            override var response: URLResponse? {
+                return mockResponse
+            }
+        }
+        
+        let destinationURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
+        let tempSourceURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
+        
+        let errorResponseBody = "Error message"
+        FileManager.default.createFile(atPath: tempSourceURL.path, contents: Data(errorResponseBody.utf8), attributes: nil)
+
+        let mockResponse = HTTPURLResponse(
+            url: destinationURL,
+            statusCode: 403,
+            httpVersion: nil,
+            headerFields: nil
         )
+        let mockTask = MockDownloadTask(response: mockResponse)
+
+        // First call didFinishDownloadingTo which should handle the error
+        delegate.urlSession(URLSession.shared, downloadTask: mockTask, didFinishDownloadingTo: tempSourceURL)
+        
+        // Verify error was sent
+        XCTAssertNotNil(mockPublisher.failureCalled)
+        let firstError = mockPublisher.failureCalled
+        
+        // Reset to track if another error is sent
+        mockPublisher.failureCalled = nil
+        
+        // Then call didCompleteWithError - it should not send another error
+        delegate.urlSession(URLSession.shared, task: mockTask, didCompleteWithError: nil)
+        
+        // Verify no duplicate error was sent
+        XCTAssertNil(mockPublisher.failureCalled, "didCompleteWithError should not send duplicate error when errorHandled is true")
     }
     
     func testDidCompleteWithError_withoutError_shouldNotSendFailure() {        

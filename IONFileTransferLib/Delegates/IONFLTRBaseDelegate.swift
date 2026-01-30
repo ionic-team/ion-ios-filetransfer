@@ -34,7 +34,8 @@ class IONFLTRBaseDelegate: NSObject {
     /// - Parameters:
     ///   - task: The `URLSessionTask` that completed.
     ///   - error: The error that occurred, if any.
-    func handleCompletion(task: URLSessionTask, error: Error?) {
+    ///   - responseBody: The optional response body to include in the error, if available.
+    func handleCompletion(task: URLSessionTask, error: Error?, responseBody: String? = nil) {
         if let error = error {
             publisher.sendFailure(error)
             return
@@ -54,7 +55,7 @@ class IONFLTRBaseDelegate: NSObject {
         publisher.sendFailure(
             IONFLTRException.httpError(
                 responseCode: response.statusCode,
-                responseBody: nil,
+                responseBody: responseBody,
                 headers: headers
             )
         )
