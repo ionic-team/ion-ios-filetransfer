@@ -1,13 +1,16 @@
-Pod::Spec.new do |spec|
-  spec.name                   = 'IONFileTransferLib'
-  spec.version                = '1.0.1'
+require 'json'
+package = JSON.parse(File.read(File.join(__dir__, 'package.json')))
 
-  spec.summary                = 'A native iOS library for download and upload files.'
+Pod::Spec.new do |spec|
+  spec.name                   = package['name']
+  spec.version                = package['version']
+
+  spec.summary                = package['description']
   spec.description            = 'A Swift library for iOS that provides simple way to download and upload files. Download and upload files with a secure, clean and modern API.'
 
   spec.homepage               = 'https://github.com/ionic-team/ion-ios-filetransfer'
-  spec.license                = { :type => 'MIT', :file => 'LICENSE' }
-  spec.author                 = { 'OutSystems Mobile Ecosystem' => 'rd.mobileecosystem.team@outsystems.com' }
+  spec.license                = { :type => package['license'], :file => "LICENSE" }
+  spec.author                 = { package['author'] => package['email'] }
   
   spec.source                 = { :http => "https://github.com/ionic-team/ion-ios-filetransfer/releases/download/#{spec.version}/IONFileTransferLib.zip", :type => "zip" }
   spec.vendored_frameworks    = "IONFileTransferLib.xcframework"
