@@ -1,7 +1,7 @@
 {
   "name": "IONFileTransferLib",
   "version": "1.0.1",
-  "description": "A native iOS library for download and upload files.",
+  "description": "A native iOS library for downloading and uploading files.",
   "author": "OutSystems Mobile Ecosystem",
   "email": "rd.mobileecosystem.team@outsystems.com",
   "license": "MIT",
