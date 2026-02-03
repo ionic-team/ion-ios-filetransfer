@@ -91,3 +91,7 @@ iOSInjectionProject/
 
 # macOS system files
 .DS_Store
+
+# Node.js / npm
+node_modules/
+package-lock.json

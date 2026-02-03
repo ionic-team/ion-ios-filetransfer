@@ -1,0 +1,54 @@
+{
+  "branches": ["main"],
+  "tagFormat": "${version}",
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "bash ./scripts/update_xcodeproj_version.sh ${nextRelease.version} \"IONFileTransferLib.xcodeproj/project.pbxproj\" && bash ./scripts/update_readme_version.sh ${nextRelease.version} \"IONFileTransferLib\" \"README.md\" && bash ./scripts/build_framework.sh \"IONFileTransferLib\" \"LICENSE\""
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": false
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "publishCmd": "bash ./scripts/publish_cocoapods.sh ${nextRelease.version} \"IONFileTransferLib\""
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "CHANGELOG.md",
+          "IONFileTransferLib.xcodeproj/project.pbxproj",
+          "IONFileTransferLib.podspec",
+          "package.json",
+          "IONFileTransferLib.zip",
+          "README.md"
+        ],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "successComment": false,
+        "failComment": false,
+        "releasedLabels": false
+      }
+    ]
+  ]
+}
