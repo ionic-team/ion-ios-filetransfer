@@ -19,7 +19,7 @@ A Swift library for iOS that provides methods for downloading and uploading file
 `ion-ios-filetransfer` is available through [CocoaPods](https://cocoapods.org). Add this to your Podfile:
 
 ```ruby
-pod 'IONFileTransferLib', '~> 1.0.1'
+pod 'IONFileTransferLib', '~> 1.0.2'
 ```
 
 ## Quick Start
