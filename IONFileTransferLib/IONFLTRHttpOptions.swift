@@ -43,7 +43,7 @@ public struct IONFLTRHttpOptions {
     /// The HTTP headers to be included in the request.
     ///
     /// Defaults to an empty dictionary.
-    var headers: HttpHeaders
+    public var headers: HttpHeaders
 
     /// The timeout interval for the HTTP request, in seconds.
     ///
