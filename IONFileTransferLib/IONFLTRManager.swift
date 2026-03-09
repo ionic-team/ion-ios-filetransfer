@@ -39,15 +39,18 @@ public class IONFLTRManager: NSObject {
     ///   - serverURL: The server `URL` from which the file will be downloaded.
     ///   - fileURL: The local file `URL` where the downloaded file will be saved.
     ///   - httpOptions: An instance of `IONFLTRHttpOptions` containing HTTP configuration options.
+    ///   - body: Optionally some `Data` that will be used as the request body
     /// - Returns: An `IONFLTRPublisher` instance for tracking the download progress and completion.
     /// - Throws: An error if the download preparation or execution fails.
     public func downloadFile(
         fromServerURL serverURL: URL,
         toFileURL fileURL: URL,
-        withHttpOptions httpOptions: IONFLTRHttpOptions
+        withHttpOptions httpOptions: IONFLTRHttpOptions,
+        body: Data? = nil
     ) throws -> IONFLTRPublisher {
         do {
-            let request = try prepareForDownload(serverURL: serverURL, fileURL: fileURL, httpOptions: httpOptions)
+            var request = try prepareForDownload(serverURL: serverURL, fileURL: fileURL, httpOptions: httpOptions)
+            request.httpBody = body
             let publisher = IONFLTRPublisher()
             let delegate = IONFLTRDownloadDelegate(
                 publisher: publisher,
