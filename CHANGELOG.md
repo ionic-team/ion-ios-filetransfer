@@ -1,10 +1,3 @@
-## [1.0.3](https://github.com/ionic-team/ion-ios-filetransfer/compare/1.0.2...1.0.3) (2026-03-09)
-
-
-### Bug Fixes
-
-* Build with Xcode 16 ([#20](https://github.com/ionic-team/ion-ios-filetransfer/issues/20)) ([99fd12d](https://github.com/ionic-team/ion-ios-filetransfer/commit/99fd12d536e03c3b48c36281d05db3862b51ecc0))
-
 ## [1.0.2](https://github.com/ionic-team/ion-ios-filetransfer/compare/1.0.1...1.0.2) (2026-02-03)
 
 
