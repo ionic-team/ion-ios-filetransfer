@@ -1,10 +1,3 @@
-## [1.0.4](https://github.com/ionic-team/ion-ios-filetransfer/compare/1.0.3...1.0.4) (2026-03-09)
-
-
-### Reverts
-
-* Revert "chore(release): 1.0.3 [skip ci]" ([94191a8](https://github.com/ionic-team/ion-ios-filetransfer/commit/94191a8b7c90c1dd07b5d6da875955b108a29d01))
-
 ## [1.0.2](https://github.com/ionic-team/ion-ios-filetransfer/compare/1.0.1...1.0.2) (2026-02-03)
 
 
