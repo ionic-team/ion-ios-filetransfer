@@ -67,6 +67,26 @@ final class IONFLTRUploadDelegateTests: XCTestCase {
         XCTAssertEqual(mockPublisher.progressCalled?.1, 1000)
     }
 
+    func testDidSendBodyData_whenResponseIsNil_shouldStillCallSendProgress() {
+        // During an active upload, the task's `response` is nil until the
+        // server replies, which is every `didSendBodyData` callback fired
+        // while bytes are being streamed. Progress must still be reported.
+        // Regression test for the bug where a 2xx statusCode gate caused
+        // no progress events to ever be emitted on iOS uploads.
+        let task = URLSession.shared.dataTask(with: URL(string: "https://example.com")!)
+
+        delegate.urlSession(
+            URLSession.shared,
+            task: task,
+            didSendBodyData: 100,
+            totalBytesSent: 500,
+            totalBytesExpectedToSend: 1000
+        )
+
+        XCTAssertEqual(mockPublisher.progressCalled?.0, 500)
+        XCTAssertEqual(mockPublisher.progressCalled?.1, 1000)
+    }
+
     func testDidCompleteWithError_shouldCallErrorHandler() {
         let task = URLSession.shared.dataTask(with: URL(string: "https://example.com")!)
         let simulatedError = NSError(domain: "Test", code: 123, userInfo: nil)

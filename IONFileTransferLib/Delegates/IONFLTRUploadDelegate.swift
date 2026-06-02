@@ -42,11 +42,14 @@ extension IONFLTRUploadDelegate: URLSessionDataDelegate {
     ///   - totalBytesExpectedToSend: The total number of bytes expected to be sent.
     func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
         self.totalBytesSent = Int(totalBytesSent)
-        let response = task.response as? HTTPURLResponse
-        let statusCode = response?.statusCode ?? 0
-        if (200...299).contains(statusCode) {
-            publisher.sendProgress(Int(totalBytesSent), totalBytesExpected: Int(totalBytesExpectedToSend))
-        }
+        // Progress is reported unconditionally here. The previous implementation
+        // gated this call on a 2xx `task.response.statusCode`, but during an
+        // upload the server has not produced a response yet, so `task.response`
+        // is nil for every `didSendBodyData` callback — which meant no progress
+        // events were ever emitted to consumers on iOS. HTTP failures are still
+        // routed through `sendFailure` in `didCompleteWithError` once the real
+        // status code is known.
+        publisher.sendProgress(Int(totalBytesSent), totalBytesExpected: Int(totalBytesExpectedToSend))
     }
     
     /// Handles the completion of an upload task.
