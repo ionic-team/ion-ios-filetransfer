@@ -21,6 +21,8 @@
 		886955F02DA6C10400292C83 /* IONFLTRUploadOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 886955EF2DA6C10300292C83 /* IONFLTRUploadOptions.swift */; };
 		886955FD2DA9185900292C83 /* IONFLTRUploadDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 886955FC2DA9185900292C83 /* IONFLTRUploadDelegate.swift */; };
 		886DAECF2DB8E9F3000033D8 /* IONFLTRBaseDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 886DAECE2DB8E9F3000033D8 /* IONFLTRBaseDelegate.swift */; };
+		88A1B00A2E60000100000002 /* IONFLTRTransferRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A1B00A2E60000100000001 /* IONFLTRTransferRegistry.swift */; };
+		88A1B00A2E60000100000004 /* IONFLTRTransferRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A1B00A2E60000100000003 /* IONFLTRTransferRegistryTests.swift */; };
 		88D031852DAFBD56005E833D /* IONFLTRFileHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D031822DAFBBE3005E833D /* IONFLTRFileHelperTests.swift */; };
 		88D031862DAFBD5A005E833D /* IONFLTRURLRequestHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D031812DAFBB2D005E833D /* IONFLTRURLRequestHelperTests.swift */; };
 		88D031892DAFC7C3005E833D /* IONFLTRInputsValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88D031882DAFC7C3005E833D /* IONFLTRInputsValidatorTests.swift */; };
@@ -43,6 +45,8 @@
 		7507FC1227FC2AAE003809F6 /* IONFileTransferLib.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = IONFileTransferLib.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7507FC1A27FC2AAE003809F6 /* IONFileTransferLibTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IONFileTransferLibTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		885053A82DB13AE2008351B4 /* IONFLTRExceptionsMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IONFLTRExceptionsMapper.swift; sourceTree = "<group>"; };
+		88A1B00A2E60000100000001 /* IONFLTRTransferRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IONFLTRTransferRegistry.swift; sourceTree = "<group>"; };
+		88A1B00A2E60000100000003 /* IONFLTRTransferRegistryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IONFLTRTransferRegistryTests.swift; sourceTree = "<group>"; };
 		886955CF2DA5819B00292C83 /* IONFLTRManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IONFLTRManager.swift; sourceTree = "<group>"; };
 		886955D12DA5828100292C83 /* IONFLTRHttpOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IONFLTRHttpOptions.swift; sourceTree = "<group>"; };
 		886955D32DA5829700292C83 /* IONFLTRPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IONFLTRPublisher.swift; sourceTree = "<group>"; };
@@ -152,6 +156,7 @@
 				886955EB2DA6BBA300292C83 /* IONFLTRFileHelper.swift */,
 				886955E62DA6B51600292C83 /* IONFLTRInputsValidator.swift */,
 				885053A82DB13AE2008351B4 /* IONFLTRExceptionsMapper.swift */,
+				88A1B00A2E60000100000001 /* IONFLTRTransferRegistry.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -162,6 +167,7 @@
 				88D031822DAFBBE3005E833D /* IONFLTRFileHelperTests.swift */,
 				88D031812DAFBB2D005E833D /* IONFLTRURLRequestHelperTests.swift */,
 				88D031882DAFC7C3005E833D /* IONFLTRInputsValidatorTests.swift */,
+				88A1B00A2E60000100000003 /* IONFLTRTransferRegistryTests.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -306,6 +312,7 @@
 				886955EE2DA6BF2200292C83 /* IONFLTRURLRequestHelper.swift in Sources */,
 				886DAECF2DB8E9F3000033D8 /* IONFLTRBaseDelegate.swift in Sources */,
 				886955F02DA6C10400292C83 /* IONFLTRUploadOptions.swift in Sources */,
+				88A1B00A2E60000100000002 /* IONFLTRTransferRegistry.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -320,6 +327,7 @@
 				88D031892DAFC7C3005E833D /* IONFLTRInputsValidatorTests.swift in Sources */,
 				88D031852DAFBD56005E833D /* IONFLTRFileHelperTests.swift in Sources */,
 				88D031952DB00D92005E833D /* IONFLTRManagerTests.swift in Sources */,
+				88A1B00A2E60000100000004 /* IONFLTRTransferRegistryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

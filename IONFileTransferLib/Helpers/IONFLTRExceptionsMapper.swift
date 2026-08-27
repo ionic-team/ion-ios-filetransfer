@@ -19,6 +19,8 @@ func mapErrorToIONFLTRException(_ error: Error) -> IONFLTRException {
         switch e.code {
         case .notConnectedToInternet, .timedOut:
             return .connectionError(cause: e)
+        case .cancelled:
+            return .transferAborted(cause: e)
         default:
             return .transferError(cause: e)
         }
