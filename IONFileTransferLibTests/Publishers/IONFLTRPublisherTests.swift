@@ -108,4 +108,33 @@ final class IONFLTRDownloadPublisherTests: XCTestCase {
 
         XCTAssertTrue(error is IONFLTRException, "Expected error to be of type IONFLTRException")
      }
+    
+    func testSendFailure_withCancelledRequest_emitsTransferAborted() {
+        let publisher = IONFLTRPublisher()
+        let expectation = XCTestExpectation(description: "Failure received")
+
+        var receivedCompletion: Subscribers.Completion<Error>?
+
+        publisher
+            .sink(
+                receiveCompletion: { completion in
+                    receivedCompletion = completion
+                    expectation.fulfill()
+                },
+                receiveValue: { _ in
+                    XCTFail("No value should be received")
+                }
+            )
+            .store(in: &cancellables)
+
+        publisher.sendFailure(URLError(.cancelled))
+
+        wait(for: [expectation], timeout: 1.0)
+
+        guard case let .failure(error)? = receivedCompletion else {
+            return XCTFail("Expected a failure completion")
+        }
+
+        XCTAssertEqual(error as? IONFLTRException, .transferAborted(cause: URLError(.cancelled)))
+    }
 }

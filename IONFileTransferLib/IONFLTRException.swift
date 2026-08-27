@@ -52,6 +52,16 @@ public enum IONFLTRException: Error, CustomStringConvertible {
     /// - Parameter cause: The underlying error that caused this exception, if available.
     case transferError(cause: Error?)
     
+    /// Indicates that the file transfer was aborted before it completed.
+    ///
+    /// - Parameter cause: The underlying error that caused this exception, if available.
+    case transferAborted(cause: Error?)
+    
+    /// Indicates that a file transfer is already in progress with the provided identifier.
+    ///
+    /// - Parameter transferId: The identifier that is already in use.
+    case transferAlreadyInProgress(transferId: String)
+    
     /// Indicates an unknown error occurred.
     ///
     /// - Parameter cause: The underlying error that caused this exception, if available.
@@ -78,6 +88,10 @@ public enum IONFLTRException: Error, CustomStringConvertible {
             return "Error establishing connection."
         case .transferError:
             return "Error during file transfer."
+        case .transferAborted:
+            return "The file transfer was aborted."
+        case .transferAlreadyInProgress(let transferId):
+            return "A file transfer with id \(transferId) is already in progress."
         case .unknownError:
             return "An unknown error occurred while trying to run the operation."
         }
@@ -92,6 +106,7 @@ public enum IONFLTRException: Error, CustomStringConvertible {
              .cannotCreateDirectory(_, let cause),
              .connectionError(let cause),
              .transferError(let cause),
+             .transferAborted(let cause),
              .unknownError(let cause):
             return cause
         default:
