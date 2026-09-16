@@ -8,7 +8,7 @@ A Swift library for iOS that provides methods for downloading and uploading file
 
 ## Requirements
 
-- iOS 14.0+
+- iOS 15.0+
 - Swift 5.0+
 - Xcode 15.0+
 
