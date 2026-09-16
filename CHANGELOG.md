@@ -1,3 +1,16 @@
+# [2.0.0](https://github.com/ionic-team/ion-ios-filetransfer/compare/1.0.3...2.0.0) (2026-09-16)
+
+
+### Features
+
+* bump minimum deployment target to iOS 15 ([#25](https://github.com/ionic-team/ion-ios-filetransfer/issues/25)) ([b7f74e8](https://github.com/ionic-team/ion-ios-filetransfer/commit/b7f74e8bb188f11eadae9b2fc75800aea475d81b))
+
+
+### BREAKING CHANGES
+
+* the minimum supported iOS version is now 15.0. Apps
+with a deployment target of iOS 14 can no longer consume this library.
+
 ## [1.0.3](https://github.com/ionic-team/ion-ios-filetransfer/compare/1.0.2...1.0.3) (2026-03-09)
 
 
