@@ -112,6 +112,7 @@ extension IONFLTRDownloadDelegate: URLSessionDownloadDelegate {
     ///   - task: The `URLSessionTask` that completed.
     ///   - error: The error that occurred, if any.
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
+        defer { session.finishTasksAndInvalidate() }
         // If we already handled an HTTP error in didFinishDownloadingTo, skip duplicate error handling
         if errorHandled {
             return
