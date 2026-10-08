@@ -56,6 +56,7 @@ extension IONFLTRUploadDelegate: URLSessionDataDelegate {
     ///   - task: The `URLSessionTask` that completed.
     ///   - error: The error that occurred, if any.
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
+        defer { session.finishTasksAndInvalidate() }
         if let error = error {
             super.handleCompletion(task: task, error: error)
             return
